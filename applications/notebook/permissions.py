@@ -23,3 +23,4 @@ class IsCommentOwner(BasePermission):
             return request.user.is_authenticated and request.user == obj.owner
         return request.user.is_authenticated and (request.user == obj.owner or request.user.is_staff)
     
+    

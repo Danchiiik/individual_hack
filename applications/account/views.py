@@ -3,9 +3,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
+from rest_framework.permissions import IsAuthenticated
+
 User = get_user_model()
 
-from applications.account.serializers import UserSerializer
+from applications.account.serializers import ChangePasswordSerializer, ForgotPasswordFinishSerializer, ForgotPasswordSerializer, UserSerializer
 
 
 class UserRegisterApiView(CreateAPIView):
@@ -28,4 +30,33 @@ class ActivationApiView(APIView):
             return Response({'msg': 'success'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'msg': 'wrong code'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    
+class ChangePasswordApiView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.set_new_password()
+        return Response('Password chenged successfully')
+    
+    
+
+class ForgotRasswordApiView(APIView):
+    def post(self,request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.send_code()
+        return Response('We have sent you a code')
+    
+    
+class ForgotPasswordFinishApiview(APIView):
+    def post(self, request):
+        serializer = ForgotPasswordFinishSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.set_new_password()
+        return Response('Your password is updated successfully')
+        
+    
+    
     
