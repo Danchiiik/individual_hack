@@ -1,8 +1,12 @@
 from rest_framework import serializers
 from django.db.models import Avg
 
-from applications.notebook.models import Comment, Notebook, Rating
+from applications.notebook.models import Comment, Favourite, Image, Notebook, Rating
 
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = '__all__'
 
 class CommentSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.email')
@@ -18,7 +22,6 @@ class NotebookSerializer(serializers.ModelSerializer):
         model = Notebook
         fields = '__all__'
     
-    
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['likes'] = instance.likes.filter(like=True).count()
@@ -26,12 +29,33 @@ class NotebookSerializer(serializers.ModelSerializer):
     
         return rep
     
+    def create(self, validated_data):
+        request = self.context.get('request')
+        files_data = request.FILES
+        
+        notebook_obj = Notebook.objects.create(**validated_data)
+        
+        for image in files_data.getlist('images'):
+            Image.objects.create(notebook_obj=notebook_obj, image=image)  
+        return notebook_obj
+    
     
 class RatingSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(min_value=1, max_value=10)
     class Meta:
         model = Rating
         fields = ['rating']
+        
+
+class FavouriteSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.email')
+    class Meta:
+        model = Favourite
+        fields = '__all__'
+        
+        
+        
+        
         
     
         

@@ -58,4 +58,23 @@ class Comment(models.Model):
     def __str__(self) -> str:
         return self.owner.email
     
+
+class Image(models.Model):
+    notebook_obj = models.ForeignKey(Notebook, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='images/')
+    
+    def __str__(self) -> str:
+        return str(self.image)
+    
+    
+    
+class Favourite(models.Model):
+    notebook_obj = models.ForeignKey(Notebook, on_delete=models.CASCADE, related_name='favourites')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favourites')
+    favourite = models.BooleanField(default=False)
+    
+    def __str__(self) -> str:
+        return f'{self.owner} -  {self.favourite}'
+    
+    
         
