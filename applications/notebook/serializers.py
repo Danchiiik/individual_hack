@@ -1,7 +1,11 @@
 from rest_framework import serializers
 from django.db.models import Avg
+from django.contrib.auth import get_user_model
 
-from applications.notebook.models import Comment, Favourite, Image, Notebook, Rating
+User = get_user_model()
+
+from applications.notebook.models import Comment, Favourite, Image, Notebook, Order, Rating
+from applications.notebook.tasks import send_order_confirm
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,6 +30,7 @@ class NotebookSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['likes'] = instance.likes.filter(like=True).count()
         rep['rating'] = instance.ratings.all().aggregate(Avg('rating'))['rating__avg']
+        rep['favourites'] = instance.favourites.filter(favourite=True).count()
     
         return rep
     
@@ -54,6 +59,33 @@ class FavouriteSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
         
+class OrderSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.email')
+    amount = serializers.IntegerField(required=True)
+    # password = serializers.ReadOnlyField(source='owner.password')
+    class Meta:
+        model = Order
+        fields = '__all__'
+        
+    def create(self, validated_data):
+        order = Order.objects.create(**validated_data)
+        order.create_order_code()
+        order.save()
+        send_order_confirm.delay(order.owner.email, order.order_code)
+        return order
+     
+     
+    def validate(self, attrs):
+        notebook_obj = attrs['notebook_obj']
+        amount = attrs['amount']
+        if notebook_obj.amount < amount:
+            raise serializers.ValidationError(f'Soory, but we have only {notebook_obj.amount} pcs')
+        return attrs
+        
+             
+    
+        
+        
         
         
         
@@ -61,3 +93,10 @@ class FavouriteSerializer(serializers.ModelSerializer):
         
         
         
+    # def create(self, validated_data):
+    #     user = User.objects.create_user(**validated_data)
+    #     user.set_password(validated_data['password'])
+    #     code = user.activation_code
+    #     send_act_code_celery.delay(user.email, code)
+    #     user.save()
+    #     return user    

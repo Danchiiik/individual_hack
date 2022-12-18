@@ -4,11 +4,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from django.contrib.auth import get_user_model
 
-from applications.notebook.models import Comment, Favourite, Like, Notebook, Rating
-from applications.notebook.serializers import CommentSerializer, FavouriteSerializer, NotebookSerializer, RatingSerializer
+User = get_user_model()
+
+from applications.notebook.models import Comment, Favourite, Like, Notebook, Order, Rating
+from applications.notebook.serializers import CommentSerializer, FavouriteSerializer, NotebookSerializer, OrderSerializer, RatingSerializer
 from applications.notebook.permissions import IsOwner, IsCommentOwner
+
 
 
 # page settings
@@ -92,5 +97,52 @@ class CommentApiView(ModelViewSet):
         return queryset
         
     
+
+class OrderApiView(ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
     
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+        
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(owner=self.request.user)
+        return Response('We have sent you an order confirmation code to your email!')
+        
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        return Response('We have sent you an order confirmation code to your email!')
     
+
+
+class OrderActivateApiView(APIView):
+    def get(self, request, order_code):
+        try:
+            order = Order.objects.get(order_code=order_code)
+            order.order = True
+            order.order_code = ''
+            ordered_count = order.amount
+            notebook_obj = order.notebook_obj
+            count = notebook_obj.amount
+            notebook_obj.amount = count - ordered_count 
+            notebook_obj.save()
+            order.save()
+            return Response({'msg': 'success'})
+        except Order.DoesNotExist:
+            return Response({'msg': 'wrong code'})
+        
+        
+#   class ActivationApiView(APIView):
+#     def get(self, request, activation_code):
+#         try:
+#             user = User.objects.get(activation_code=activation_code)
+#             user.is_active = True
+#             user.activation_code = ''
+#             user.save()
+#             return Response({'msg': 'success'}, status=status.HTTP_200_OK)
+#         except User.DoesNotExist:
+#             return Response({'msg': 'wrong code'}, status=status.HTTP_400_BAD_REQUEST)
+        
+      
