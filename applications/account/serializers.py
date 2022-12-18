@@ -6,20 +6,20 @@ from applications.account.tasks import send_act_code_celery, send_confirmation_c
 User = get_user_model()
 
 
+
 class UserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(min_length=4, required=True, write_only=True)
     class Meta:
         model = User
         fields = ['email', 'password', 'password2']
-        
-         
+            
     def validate(self, attrs):
         p1 = attrs.get('password')
         p2 = attrs.pop('password2')
-        
         if p1 != p2:
             raise serializers.ValidationError('Passwords are not similar')
         return attrs
+    
     
     
     def create(self, validated_data):
@@ -49,8 +49,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         if not user.check_password(password):
             raise serializers.ValidationError('Current password is wrong')
         return password
-    
-        
+         
     def set_new_password(self):   
         user = self.context.get('request').user 
         password = self.validated_data.get('new_password')
@@ -74,6 +73,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
         user.save()
         send_confirmation_code.delay(user.email, user.activation_code)
         
+     
         
 class ForgotPasswordFinishSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
@@ -86,12 +86,10 @@ class ForgotPasswordFinishSerializer(serializers.Serializer):
             raise serializers.ValidationError('No such user with this email')
         return email
     
-    
     def validate_code(self, code):
         if not User.objects.filter(activation_code=code).exists():
             raise serializers.ValidationError('Wrong code')
         return code
-    
     
     def validate(self, attrs):
         p1 = attrs.get('password')
@@ -99,8 +97,7 @@ class ForgotPasswordFinishSerializer(serializers.Serializer):
         if p1 != p2:
             raise serializers.ValidationError('Passwords are not similar')
         return attrs
-                 
-                  
+                             
     def set_new_password(self):
         email = self.validated_data.get('email')
         password = self.validated_data.get('password')

@@ -13,6 +13,7 @@ class IsOwner(BasePermission):
         print('You are not the owner')
         return request.user.is_authenticated and (request.user == obj.owner or request.user.is_staff)
     
+   
     
 class IsCommentOwner(BasePermission):
     def has_permission(self, request, view):

@@ -10,6 +10,7 @@ User = get_user_model()
 from applications.account.serializers import ChangePasswordSerializer, ForgotPasswordFinishSerializer, ForgotPasswordSerializer, UserSerializer
 
 
+
 class UserRegisterApiView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -31,6 +32,7 @@ class ActivationApiView(APIView):
         except User.DoesNotExist:
             return Response({'msg': 'wrong code'}, status=status.HTTP_400_BAD_REQUEST)
         
+   
     
 class ChangePasswordApiView(APIView):
     permission_classes = [IsAuthenticated]
@@ -48,6 +50,7 @@ class ForgotRasswordApiView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.send_code()
         return Response('We have sent you a code')
+  
     
     
 class ForgotPasswordFinishApiview(APIView):

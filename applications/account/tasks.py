@@ -12,6 +12,7 @@ def send_act_code_celery(email, code):
         [email]    
     )
     
+    
 @app.task    
 def send_confirmation_code(email, code):
     send_mail(

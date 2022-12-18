@@ -5,9 +5,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 User = get_user_model()
 
 
-# def sup_user():
-#     return User.objects.get(email='admin@gmail.com')
-
 class Notebook(models.Model):
     name = models.CharField(max_length=50)
     brand = models.CharField(max_length=50, null=True, blank=True)
@@ -18,7 +15,6 @@ class Notebook(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to='images/')
     
-    
     def __str__(self) -> str:
         return self.name
     
@@ -27,6 +23,7 @@ class Notebook(models.Model):
         verbose_name = 'Notebook'
         
     
+    
 class Image(models.Model):
     notebook_obj = models.ForeignKey(Notebook, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='images/')
@@ -34,8 +31,7 @@ class Image(models.Model):
     def __str__(self) -> str:
         return str(self.image)
         
-        
-        
+          
 
 class Like(models.Model):
     like = models.BooleanField(default=False)
@@ -44,6 +40,7 @@ class Like(models.Model):
     
     def __str__(self) -> str:
         return self.like
+
 
 
 class Rating(models.Model):
@@ -58,6 +55,7 @@ class Rating(models.Model):
     
     def __str__(self) -> str:
         return self.rating
+   
     
     
 class Comment(models.Model):
@@ -71,9 +69,7 @@ class Comment(models.Model):
         return self.owner.email
     
 
-    
-    
-    
+        
 class Favourite(models.Model):
     notebook_obj = models.ForeignKey(Notebook, on_delete=models.CASCADE, related_name='favourites')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favourites')
@@ -81,6 +77,7 @@ class Favourite(models.Model):
     
     def __str__(self) -> str:
         return f'{self.owner} -  {self.favourite}'
+    
     
     
 class Order(models.Model):
@@ -92,7 +89,6 @@ class Order(models.Model):
     
     def __str__(self) -> str:
         return f'{self.owner} - {self.notebook_obj}'
-    
     
     def create_order_code(self):
         import uuid

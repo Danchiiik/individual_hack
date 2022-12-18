@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -33,6 +34,7 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
+
 class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
@@ -47,7 +49,6 @@ class CustomUser(AbstractUser):
     
     def __str__(self) -> str:
         return str(self.email)
-    
     
     def create_act_code(self):
         import uuid

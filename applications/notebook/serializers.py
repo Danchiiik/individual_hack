@@ -7,16 +7,21 @@ User = get_user_model()
 from applications.notebook.models import Comment, Favourite, Image, Notebook, Order, Rating
 from applications.notebook.tasks import send_order_confirm
 
+
+
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = '__all__'
+
+
 
 class CommentSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.email')
     class Meta:
         model = Comment
         fields = '__all__'
+
 
 
 class NotebookSerializer(serializers.ModelSerializer):
@@ -31,18 +36,16 @@ class NotebookSerializer(serializers.ModelSerializer):
         rep['likes'] = instance.likes.filter(like=True).count()
         rep['rating'] = instance.ratings.all().aggregate(Avg('rating'))['rating__avg']
         rep['favourites'] = instance.favourites.filter(favourite=True).count()
-    
         return rep
     
     def create(self, validated_data):
         request = self.context.get('request')
         files_data = request.FILES
-        
         notebook_obj = Notebook.objects.create(**validated_data)
-        
         for image in files_data.getlist('images'):
             Image.objects.create(notebook_obj=notebook_obj, image=image)  
         return notebook_obj
+ 
     
     
 class RatingSerializer(serializers.ModelSerializer):
@@ -50,6 +53,7 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = ['rating']
+  
         
 
 class FavouriteSerializer(serializers.ModelSerializer):
@@ -58,11 +62,11 @@ class FavouriteSerializer(serializers.ModelSerializer):
         model = Favourite
         fields = '__all__'
         
+    
         
 class OrderSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.email')
     amount = serializers.IntegerField(required=True)
-    # password = serializers.ReadOnlyField(source='owner.password')
     class Meta:
         model = Order
         fields = '__all__'
@@ -73,7 +77,6 @@ class OrderSerializer(serializers.ModelSerializer):
         order.save()
         send_order_confirm.delay(order.owner.email, order.order_code)
         return order
-     
      
     def validate(self, attrs):
         notebook_obj = attrs['notebook_obj']
