@@ -82,7 +82,7 @@ class OrderSerializer(serializers.ModelSerializer):
         notebook_obj = attrs['notebook_obj']
         amount = attrs['amount']
         if notebook_obj.amount < amount:
-            raise serializers.ValidationError(f'Soory, but we have only {notebook_obj.amount} pcs')
+            raise serializers.ValidationError(f'Sorry, but we have only {notebook_obj.amount} pcs')
         return attrs
         
              

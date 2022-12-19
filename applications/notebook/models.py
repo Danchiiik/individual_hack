@@ -16,7 +16,7 @@ class Notebook(models.Model):
     image = models.ImageField(upload_to='images/')
     
     def __str__(self) -> str:
-        return self.name
+        return str(self.name)
     
     class Meta:
         verbose_name_plural = 'Notebooks'
@@ -39,7 +39,7 @@ class Like(models.Model):
     notebook_obj = models.ForeignKey(Notebook, on_delete=models.CASCADE, related_name='likes')
     
     def __str__(self) -> str:
-        return self.like
+        return str(self.like)
 
 
 
@@ -54,7 +54,7 @@ class Rating(models.Model):
     )
     
     def __str__(self) -> str:
-        return self.rating
+        return str(self.rating)
    
     
     
@@ -66,7 +66,7 @@ class Comment(models.Model):
     updated = models.DateTimeField(auto_now=True)
     
     def __str__(self) -> str:
-        return self.owner.email
+        return str(self.owner.email)
     
 
         
